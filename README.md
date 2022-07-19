@@ -1,4 +1,4 @@
-# MMM-GoogleTasks
+# MMM-Oura2
 
 Module for the [MagicMirror²](https://github.com/MichMich/MagicMirror/) smart mirror.
 

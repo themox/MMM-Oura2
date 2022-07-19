@@ -3,6 +3,14 @@
 Module for the [MagicMirror²](https://github.com/MichMich/MagicMirror/) smart mirror.
 
 Displays a user's Oura data in a chart.  Inspired by https://github.com/erchenger/MMM-Oura, but I was looking for a little more data.  Still a work in progress but feature requests and feedback are welcome.
+<br><br>
+This module uses a python backend, primarily through Pandas, to download the data from Oura.  On a request for update (on load, or on the pre-programmed interval), the javascript module sends a request to the python for updated data.  
+The python downloads that data from Oura, processes through Pandas for data formatting and management, and then pushes back to the javascript in an easily parsable format.  On receipt, the javascript pushes that into a chart.js canvas, which
+is then rendered by the getDom function when called.
+<br><br>
+
+* Which features would you like to see?<br>
+* Which charts would you like to see?<br>
 
 
 ### Example
@@ -12,9 +20,9 @@ Displays a user's Oura data in a chart.  Inspired by https://github.com/erchenge
 
 1. Chart.js
 2. Python3, including the following modules/packages:
---Pandas
---Numpy
---Requests
+--Pandas<br>
+--Numpy<br>
+--Requests<br>
 
 Assumes python3 is located at /usr/bin/python3
 
@@ -61,8 +69,8 @@ var config = {
 | `charts`                | *Required* - Array of which charts to display. All charts will get the same style information from the below configuration options. <br><br> **Possible values:** `scores`  `heartrate` <br> **Default value:** `["scores"]`
 | `unit`                  | *Required* - Combined with interval, amount of days to display in chart <br><br> **Possible values:** `months`  `weeks`  `days` <br> **Default value:** `weeks`
 | `interval`              | *Required* - Integer number to combine with unit for number of days to display in chart (e.g. 1 weeks will give 7 days) <br> **Default value:** `1`
-| `updateInterval`        | Interval at which content updates (Milliseconds) <br><br> **Possible values:** `2000` - `86400000` <br> **Default value:** `10000 * 60 * 60` (60 minutes)
-| `palette`               | One of four different color palettes to use when choosing line color. <br><br> **Possible values:** `0` - `3` <br> **Default value:** `0` (2 seconds)
+| `updateInterval`        | Interval at which content updates (Milliseconds); recommend keeping this large as it does not need updating that often <br><br> **Possible values:** `2000` - `86400000` <br> **Default value:** `10000 * 60 * 60` (60 minutes)
+| `palette`               | One of four different color palettes to use when choosing line color. <br><br> **Possible values:** `0` - `3` <br> **Default value:** `0`
 | `lineWeight`            | Integer line thickness for each series  <br><br> **Possible values:** `0` - `10` <br> **Default value:** `1`
 | `dotWeight`             | Integer point size<br><br> **Possible values:** `0` - `10` <br> **Default value:** `3`
 | `chartTextColor`        | Color of text on chart, including labels, legend, etc.  Conforms to [Chart.js Color styles](https://www.chartjs.org/docs/latest/general/colors.html) <br> **Default value:** `gray`

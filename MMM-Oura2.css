@@ -2,20 +2,19 @@
 	display: grid;
 	grid-template-columns: 1fr auto;
 	transform: translateY(-.6em);
-	padding-top: 20px; 
-	float: clear; 
 	width: 600px; 
 	background-color: black; 
 	color: white; 
-	border-style: none;
-	border-width: 1px; 
-	border-color: #BBBBBB; 
-	border-radius: 5px;
+	border-top: 1px solid #666;
 }
 
 .MMM-Oura2 ul {
 	list-style-type: none;
 	padding: 0;
 	margin: 0; 
+}
+
+.MMM-Oura2 canvas {
+	padding-top: 5px;
 }
 

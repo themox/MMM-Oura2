@@ -37,6 +37,34 @@ Module.register("MMM-Oura2", {
 		self.chart_wrapper;
 		self.loaded = false;
 
+
+		// enforce ranges on configurable integer values in order to ensure somewhat sane behavior
+		if (self.config.updateInterval < 2000) {
+			self.config.updateInterval = 2000;
+		} else if (self.config.updateInterval > 86400000) {
+			self.config.updateInterval = 86400000;
+		}
+
+		if (self.config.lineWeight < 0) {
+			self.config.lineWeight = 0;
+		} else if (self.config.lineWeight > 10) {
+			self.config.lineWeight = 10;
+		}
+
+		if (self.config.palette < 0) {
+			self.config.palette = 0;
+		} else if (self.config.palette > 3) {
+			self.config.palette = 3;
+		}
+
+		if (self.config.dotWeight < 0) {
+			self.config.dotWeight = 0;
+		} else if (self.config.dotWeight > 10) {
+			self.config.dotWeight = 10;
+		}
+
+
+
 		// Create repeating call to node_helper get list
 		setInterval(function() {
 			self.sendSocketNotification("REQUEST_UPDATE", self.config);
@@ -174,6 +202,9 @@ Module.register("MMM-Oura2", {
 
 				var dataSet = {};
 
+        			colNum ++;
+
+
         			if (!columns.includes(column)) {
             				// Only pick up the columns we want
             				continue;
@@ -181,12 +212,11 @@ Module.register("MMM-Oura2", {
 
 				// Text label for this data series on the legend
 				if (labelColumns) {
-					dataSet.label = labelColumns[colNum];
+					dataSet.label = labelColumns[columns.indexOf(column)];
 				} else {
 					dataSet.label = column;
 				}
 
-        			colNum ++;
 
         			data = [];
         			labels = [];

@@ -19,10 +19,10 @@ is then rendered by the getDom function when called.
 ### Dependencies
 
 1. Chart.js
-2. Python3, including the following modules/packages:
---Pandas<br>
---Numpy<br>
---Requests<br>
+2. Python3, including the following modules/packages:<br>
+*Pandas<br>
+*Numpy<br>
+*Requests<br>
 
 Assumes python3 is located at /usr/bin/python3
 
@@ -49,9 +49,9 @@ var config = {
             position: "top_left",
             config: {
 		token: "",              // REQUIRED. your personal access token for Oura
-                charts: ["heartrate"],  // Rwhich charts to display; currently one or both of ["heartrate", "scores"]; eventually to be several
-                unit:  "weeks",         // one of [months, days, weeks]
-                interval: 1,            // integer interval to combine with unit for length of time to get & display data
+                charts: ["heartrate"],  // Which charts to display; currently one or both of ["sleep", "heartrate", "scores"]; eventually to be several
+                unit:  "weeks",         // One of [months, days, weeks]
+                interval: 1,            // Integer interval to combine with unit for length of time to get & display data
                 ...
                 // See below for detailed Configuration Options
             }
@@ -66,11 +66,11 @@ var config = {
 | Option                  | Details
 |------------------------ |--------------
 | `token`                 | *Required* - Your Oura Personal Access token - see [Oura documentation](https://cloud.ouraring.com/docs/authentication)
-| `charts`                | *Required* - Array of which charts to display. All charts will get the same style information from the below configuration options. <br><br> **Possible values:** `scores`  `heartrate` <br> **Default value:** `["scores"]`
-| `unit`                  | *Required* - Combined with interval, amount of days to display in chart <br><br> **Possible values:** `months`  `weeks`  `days` <br> **Default value:** `weeks`
+| `charts`                | *Required* - Array of which charts to display. All charts will get the same style information from the below configuration options. <br> **Possible values:** `sleep`  `scores`  `heartrate`  `activity`<br> **Default value:** `["scores"]`
+| `unit`                  | *Required* - Combined with interval, amount of days to display in chart <br> **Possible values:** `months`  `weeks`  `days` <br> **Default value:** `weeks`
 | `interval`              | *Required* - Integer number to combine with unit for number of days to display in chart (e.g. 1 weeks will give 7 days) <br> **Default value:** `1`
-| `updateInterval`        | Interval at which content updates (Milliseconds); recommend keeping this large as it does not need updating that often <br><br> **Possible values:** `2000` - `86400000` <br> **Default value:** `10000 * 60 * 60` (60 minutes)
-| `palette`               | One of four different color palettes to use when choosing line color. <br><br> **Possible values:** `0` - `3` <br> **Default value:** `0`
+| `updateInterval`        | Interval at which content updates (milliseconds); recommend keeping this large as it does not need updating that often <br> **Possible values:** `2000` - `86400000` <br> **Default value:** `10000 * 60 * 60` (60 minutes)
+| `palette`               | One of four different color palettes to use when choosing line color. <br> **Possible values:** `0` - `3` <br> **Default value:** `0`
 | `lineWeight`            | Integer line thickness for each series  <br><br> **Possible values:** `0` - `10` <br> **Default value:** `1`
 | `dotWeight`             | Integer point size<br><br> **Possible values:** `0` - `10` <br> **Default value:** `3`
 | `chartTextColor`        | Color of text on chart, including labels, legend, etc.  Conforms to [Chart.js Color styles](https://www.chartjs.org/docs/latest/general/colors.html) <br> **Default value:** `gray`

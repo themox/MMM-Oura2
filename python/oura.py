@@ -278,6 +278,10 @@ def getDailyDataV1(dataType, startDate, endDate, token):
 	df.rename(columns={"summary_date": "day"}, inplace=True, errors="raise")
 	df.set_index('day', inplace=True)
 
+	if dataType == "sleep":
+		df["duration"] = df["duration"] / 60 # convert to minutes
+		df["onset_latency"] = df["onset_latency"] / 60
+
 	# rename all column names to prepend the type of data; makes figuring out later easier when all combined
 	# if activity is already in the column, don't need to worry about it
 	for column in df.columns.values:
@@ -366,7 +370,8 @@ else:
 	days = interval_num
 
 # get Start date based on range of months, add extra day to make date range inclusive of both ends
-startdate = today - relativedelta(months=months, days=days + 1)
+
+startdate = today - relativedelta(months=months, days=days) # + 1)
 startdatestr = startdate.strftime(dateformat)
 
 enddate = today #- relativedelta(days = 1)

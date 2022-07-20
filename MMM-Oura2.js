@@ -2,7 +2,7 @@ Module.register("MMM-Oura2", {
 	// Default module config.
 	defaults: {
                 token: "", 		// REQUIRED. your personal access token for Oura
-                charts: ["scores"],     // which charts to display; currently one or both of ["heartrate", "scores"]; eventually to be several
+                charts: ["scores"],     // which charts to display; currently one or both of ["heartrate", "scores", "sleep", "activity"]; eventually to be several
                 unit:  "weeks",         // one of [months, days, weeks]
                 interval: 1,            // integer interval to combine with unit for length of time to get & display data
 		updateInterval: 10000*60*60, // default to every 60 minutes (ms)
@@ -129,7 +129,28 @@ Module.register("MMM-Oura2", {
 			id: "score",
 			max: 100,
 			yAxisLabel: "Score",
-		}];
+		},
+		{
+			type: "sleep",
+			columns: ["sleep_duration", "sleep_efficiency", "sleep_onset_latency", "sleep_score"],
+			labelColumns: ["Duration (Min)", "EFficiency (%)", "Onset Latency (Min)", "Score"],
+			yAxes: ["y1", "y", "y", "y"],
+			chartTitle: "Sleep Analysis",
+			id: "sleep",
+			yAxisLabel: "Score",
+			yAxisLabel2: "Duration",
+		},
+		{
+			type: "activity",
+			columns: ["activity_score", "activity_active_calories", "activity_steps", "activity_total_calories"],
+			labelColumns: ["Score", "Active Calories", "Steps", "Total Calories"],
+			chartTitle: "Activity Analysis",
+			id: "activity",
+			yAxes: ["y", "y1", "y2", "y1"],
+			yAxisLabel: "Score",
+			yAxisLabel2: "Calories",
+		},
+		];
 
 		var canvas_list = document.createElement("ul");
 
@@ -260,6 +281,13 @@ Module.register("MMM-Oura2", {
 				dataSet.pointBackgroundColor = this.buildColorStr(colNum, palette);
 
 				datasets.push(dataSet);
+
+
+				// Set up multiple axes for the graphs if required
+				if (chart_type.yAxes) {
+					dataSet.yAxisID = chart_type.yAxes[columns.indexOf(column)];
+				}
+
     			}
 
 			// Build out remaining chart options
@@ -267,6 +295,9 @@ Module.register("MMM-Oura2", {
     				scales: {
         				y: {
 	            				beginAtZero: false,
+						display: true,
+						type: "linear",
+						position: "left",
             					title: {
                     					text: yAxisLabel,
                     					display: true,
@@ -279,6 +310,38 @@ Module.register("MMM-Oura2", {
                     					color: chartGridColor,
                 				},
         				},
+                                        y1: {
+						display: false,
+						type: "linear",
+                                                beginAtZero: false,
+						position: "right",
+                                                title: {
+                                                        display: false,
+                                                        color: chartTextColor,
+                                                },
+                                                ticks: {
+                                                        color: chartTextColor,
+                                                },
+                                                grid: {
+							drawOnChartArea: false,
+                                                },
+                                        },
+                                        y2: {
+                                                display: false,
+                                                type: "linear",
+                                                beginAtZero: false,
+                                                position: "right",
+                                                title: {
+                                                        display: false,
+                                                        color: chartTextColor,
+                                                },
+                                                ticks: {
+                                                        color: chartTextColor,
+                                                },
+                                                grid: {
+                                                        drawOnChartArea: false,
+                                                },
+                                        },
         				x: {
             					ticks: {
                 					color: chartTextColor,
@@ -308,11 +371,20 @@ Module.register("MMM-Oura2", {
     				}
 			};
 
+			if (chart_type.yAxes) {
+				options.scales.y1.display = true;
+			}
+
                         if (chart_type.max) {
 				// Set a y-axis max value if the chart-type should have it.
 				options.scales.y.max = chart_type.max;
                                 //console.log("Chart y max = " + chart_type.max);
                         }
+
+			if (chart_type.yAxisLabel2) {
+				options.scales.y1.title.text = chart_type.yAxisLabel2;
+				options.scales.y1.title.display = true;
+			}
 
 			myChart.data.labels = finalLabels;	// X values
 			myChart.data.datasets = datasets;	// all the individual datasets
@@ -325,6 +397,8 @@ Module.register("MMM-Oura2", {
 		}
 
 		wrapper.appendChild(canvas_list);
+
+		console.log(wrapper.innerHTML);
 
 		return wrapper;
 	},

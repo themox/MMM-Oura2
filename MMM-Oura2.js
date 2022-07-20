@@ -2,7 +2,7 @@ Module.register("MMM-Oura2", {
 	// Default module config.
 	defaults: {
                 token: "", 		// REQUIRED. your personal access token for Oura
-                charts: ["scores"],     // which charts to display; currently one or both of ["heartrate", "scores"]; eventually to be several
+                charts: ["scores"],     // which charts to display; currently one or both of ["heartrate", "scores", "sleep", "activity"]; eventually to be several
                 unit:  "weeks",         // one of [months, days, weeks]
                 interval: 1,            // integer interval to combine with unit for length of time to get & display data
 		updateInterval: 10000*60*60, // default to every 60 minutes (ms)
@@ -139,6 +139,16 @@ Module.register("MMM-Oura2", {
 			id: "sleep",
 			yAxisLabel: "Score",
 			yAxisLabel2: "Duration",
+		},
+		{
+			type: "activity",
+			columns: ["activity_score", "activity_active_calories", "activity_steps", "activity_total_calories"],
+			labelColumns: ["Score", "Active Calories", "Steps", "Total Calories"],
+			chartTitle: "Activity Analysis",
+			id: "activity",
+			yAxes: ["y", "y1", "y2", "y1"],
+			yAxisLabel: "Score",
+			yAxisLabel2: "Calories",
 		},
 		];
 
@@ -316,6 +326,22 @@ Module.register("MMM-Oura2", {
 							drawOnChartArea: false,
                                                 },
                                         },
+                                        y2: {
+                                                display: false,
+                                                type: "linear",
+                                                beginAtZero: false,
+                                                position: "right",
+                                                title: {
+                                                        display: false,
+                                                        color: chartTextColor,
+                                                },
+                                                ticks: {
+                                                        color: chartTextColor,
+                                                },
+                                                grid: {
+                                                        drawOnChartArea: false,
+                                                },
+                                        },
         				x: {
             					ticks: {
                 					color: chartTextColor,
@@ -371,6 +397,8 @@ Module.register("MMM-Oura2", {
 		}
 
 		wrapper.appendChild(canvas_list);
+
+		console.log(wrapper.innerHTML);
 
 		return wrapper;
 	},

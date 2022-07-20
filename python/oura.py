@@ -370,7 +370,8 @@ else:
 	days = interval_num
 
 # get Start date based on range of months, add extra day to make date range inclusive of both ends
-startdate = today - relativedelta(months=months, days=days + 1)
+
+startdate = today - relativedelta(months=months, days=days) # + 1)
 startdatestr = startdate.strftime(dateformat)
 
 enddate = today #- relativedelta(days = 1)

@@ -19,10 +19,10 @@ is then rendered by the getDom function when called.
 ### Dependencies
 
 1. Chart.js
-2. Python3, including the following modules/packages:
---Pandas<br>
---Numpy<br>
---Requests<br>
+2. Python3, including the following modules/packages:<br>
+*Pandas<br>
+*Numpy<br>
+*Requests<br>
 
 Assumes python3 is located at /usr/bin/python3
 
@@ -49,9 +49,9 @@ var config = {
             position: "top_left",
             config: {
 		token: "",              // REQUIRED. your personal access token for Oura
-                charts: ["heartrate"],  // Rwhich charts to display; currently one or both of ["heartrate", "scores"]; eventually to be several
-                unit:  "weeks",         // one of [months, days, weeks]
-                interval: 1,            // integer interval to combine with unit for length of time to get & display data
+                charts: ["heartrate"],  // Which charts to display; currently one or both of ["heartrate", "scores"]; eventually to be several
+                unit:  "weeks",         // One of [months, days, weeks]
+                interval: 1,            // Integer interval to combine with unit for length of time to get & display data
                 ...
                 // See below for detailed Configuration Options
             }

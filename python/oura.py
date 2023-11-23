@@ -1,49 +1,21 @@
 #!/usr/bin/python3
 
+import warnings
+warnings.filterwarnings("ignore")
+
 import requests
 import json
-import hashlib
 import pandas as pd
 import numpy as np
 import sys
+import argparse
 
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 
 ###############
-# Full API documentation at https://cloud.ouraring.com/docs
+# Full Oura API documentation at https://cloud.ouraring.com/docs
 ###############
-
-import argparse
-parser = argparse.ArgumentParser()
-
-parser.add_argument('-token', type = str, required = False, help='Oura personal access token (required)')
-parser.add_argument('-interval', type = int, required = False, help='Number of unit to query data (required)')
-parser.add_argument('-unit', type = str, required = False, help='Unit to use [months, days, weeks] to query data (required)')
-parser.add_argument('-activity', type = str, required = False, help='Which activity to get (required)\nOne of: \n\t[activity, workouts, sleep, readiness]')
-
-args = parser.parse_args()
-
-pat = args.token
-interval_num = args.interval
-interval_unit = args.unit
-activity = args.activity
-
-activities = ["activity", "workouts", "heartrate", "sleep", "readiness", "all"]
-
-
-# Removed the required = True from the add_argument in order to be able to flush the stdout after error
-# do some argument checking here
-if (not pat or not interval_num or not interval_unit or not activity or not activities.__contains__(activity)):
-	print("Invalid arguments.")
-
-	print('\t -token=<token> \t (str) Oura personal access token (required)')
-	print('\t -interval=<interval> \t (int) Number of unit to query data (required)')
-	print('\t -unit=<unit> \t (str) Unit to use with interval, one of [months, days, weeks] (required)')
-	print('\t-activity=<activity> \t (str) Which activity to get, one of [activity, workouts, sleep, readiness, heartrate, all] (required)')
-
-	sys.stdout.flush()
-	exit(-1)
 
 def renameHRCols(col):
 	if isinstance(col, tuple):
@@ -129,46 +101,11 @@ def getHRData(startDate, endDate, token):
 	
 	return df
 
-def getDailyDataV2(dataType, startDate, endDate, token):
+def getHttpResponse(page, startDate, endDate, token):
 
-	okTypes = ["activity", "workouts"]
-	url = ""
-	dropColumns = []
-	params = {}
+	#f'https://api.ouraring.com/v2/usercollection/{url}
+	url = f'https://api.ouraring.com/v2/usercollection/{page}' 
 
-	# assume startDate and endDate are correctly formatted
-	# @todo add error checking for that
-	if not okTypes.__contains__(dataType):
-		# @todo error!
-		return None
-		pass
-
-	# Construct the V2 API URL
-	# DailyActivity
-	if dataType == "activity":
-		url = 'https://api.ouraring.com/v2/usercollection/daily_activity' 
-
-		# See response schema at Oura's website: https://cloud.ouraring.com/v2/docs#operation/daily_activity_route_daily_activity_get
-		dropColumns = ["class_5_min", "average_met_minutes", "contributors", "equivalent_walking_distance", "high_activity_met_minutes",
-		"high_activity_time", "inactivity_alerts", "low_activity_met_minutes", "low_activity_time", "medium_activity_met_minutes",
-		"medium_activity_time", "meters_to_target", "non_wear_time", "resting_time",  "sedentary_met_minutes", "sedentary_time",
-		"target_calories", "target_meters", "timestamp", "met"]
-
-		# Keep columns: score, active_calories, steps, total_calories, day		
-
-	elif dataType == "workouts":
-		url = 'https://api.ouraring.com/v2/usercollection/workout' 
-
-		# see response schema at Oura's website: https://cloud.ouraring.com/v2/docs#operation/workouts_route_workout_get
-		dropColumns = ['end_datetime', 'source', 'start_datetime', 'distance']
-
-		# Keep Columns: day, activity, calories, intensity
-
-	else: 
-		# @todo error!
-		pass
-
-	# Search parameters
 	params = { 
 		'start_date': startDate, 
 		'end_date': endDate 
@@ -181,6 +118,56 @@ def getDailyDataV2(dataType, startDate, endDate, token):
 
 	# Get the data
 	response = requests.request('GET', url, headers=headers, params=params) 
+
+	return response
+
+
+def getDailyDataV2(dataType, startDate, endDate, token):
+
+	okTypes = ["activity", "workouts", "readiness"]
+	url = ""
+	dropColumns = []
+	params = {}
+
+	# assume startDate and endDate are correctly formatted
+	# @todo add error checking for that
+	if not okTypes.__contains__(dataType):
+		# @todo error!
+		return None
+
+	# Construct the V2 API URL
+	# DailyActivity
+	if dataType == "activity":
+		url = 'daily_activity' 
+
+		# See response schema at Oura's website: https://cloud.ouraring.com/v2/docs#operation/daily_activity_route_daily_activity_get
+		dropColumns = ["class_5_min", "average_met_minutes", "contributors", "equivalent_walking_distance", "high_activity_met_minutes",
+		"high_activity_time", "inactivity_alerts", "low_activity_met_minutes", "low_activity_time", "medium_activity_met_minutes",
+		"medium_activity_time", "meters_to_target", "non_wear_time", "resting_time",  "sedentary_met_minutes", "sedentary_time",
+		"target_calories", "target_meters", "timestamp", "met", "id"]
+
+		# Keep columns: score, active_calories, steps, total_calories, day		
+
+	elif dataType == "workouts":
+		url = 'workout' 
+
+		# see response schema at Oura's website: https://cloud.ouraring.com/v2/docs#operation/workouts_route_workout_get
+		dropColumns = ['end_datetime', 'source', 'start_datetime', 'distance']
+
+		# Keep Columns: day, activity, calories, intensity
+
+
+	elif dataType == "readiness":
+		url = 'daily_readiness' 
+
+		dropColumns = ["id", "timestamp", "temperature_deviation","contributors", "temperature_trend_deviation"]
+
+	else: 
+		# @todo error!
+		pass
+
+	response = getHttpResponse(url, startDate, endDate, token)
+ 
 
 	# @todo error checking on  the response
 
@@ -199,6 +186,15 @@ def getDailyDataV2(dataType, startDate, endDate, token):
 
 		pass
 
+	elif dataType == 'readiness':
+		contributors = df.loc[0]["contributors"]
+		df = df.reindex(columns = df.columns.tolist() + list(contributors.keys()))
+
+		for i in range(0, df.shape[0]):
+			contributors = df.loc[i]["contributors"]
+			for key in contributors.keys():
+				df[key].iat[i] = contributors[key]
+
 	# Drop extra columns we're not going to use so we're not passing all that data back and forth
 	# Easy enough to come in here later and fix it if we want to use them
 	df.drop(columns=dropColumns, inplace=True, errors='ignore')
@@ -213,11 +209,8 @@ def getDailyDataV2(dataType, startDate, endDate, token):
 
 	return df
 
-
-# Not all available data has been ported over to the V2 API
-# @todo watch the Oura API (says early '23') for when this moves over, will be a breaking change
-def getDailyDataV1(dataType, startDate, endDate, token):
-	okTypes = ["sleep", "readiness"]
+def getSleepDataV2(dataType, startDate, endDate, token):
+	okTypes = ["sleep"]
 	dropColumns = []
 	
 	# assume startDate and endDate are correctly formatted
@@ -226,71 +219,60 @@ def getDailyDataV1(dataType, startDate, endDate, token):
 		# @todo error!
 		return None
 
-	# Not all columns need to be passed to the calling API, too much data for a high level infographic
-	# But not possible to *not* get it through Oura's API, so just drop it here using Pandas functions
+	# In V2, sleep data is spread across a couple queries
+	urls = ['sleep', 'daily_sleep']
 
-	if dataType == "sleep":
-		# See Oura's API for a description of each field: https://cloud.ouraring.com/docs/sleep
-		dropColumns = ["period_id", "is_longest", "timezone", "score_total", "score_disturbances", "score_efficiency", "bedtime_start",
-		"bedtime_end", "score_latency", "score_rem", "score_deep", "score_alignment", "total", "awake", "light", "rem", "deep", "restless",
-		"midpoint_time", "hr_lowest", "hr_average", "rmssd", "breath_average", "temperature_delta", "hypnogram_5min", "hr_5min", "rmssd_5min",
-		# The following fields are in the data but not documented in Oura's API, unclear of units, etc.
-		"temperature_deviation", "temperature_trend_deviation", "bedtime_start_delta", "bedtime_end_delta", "midpoint_at_delta"]
+	responses = {}
+	for url in urls:
+		response = getHttpResponse(url, startDate, endDate, token)
+		#print(response)
+		if response.status_code == 200:
+			responses[url] = response
+		else:
+			print("didn't get data")
+			got_data = False
+			break
 
-		# Kept Columns: "summary_date", "score", "efficiency", "hr_average", "onset_latency", "duration"
+	#print(responses)
 
-	elif dataType == "readiness":
-		# See Oura's API for a description of each field: https://cloud.ouraring.com/docs/readiness
-		dropColumns = ["period_id", "score_previous_night", "score_sleep_balance", "score_previous_day", 
-		"score_activity_balance", "score_resting_hr", "score_temperature", "rest_mode_state"]
+	# daily_sleep
+	df = pd.DataFrame(responses["daily_sleep"].json()["data"])
 
-		# Kept Columns: summary_date, score, score_hrv_balance, score_recovery_index
+	# Drop columns we don't need
+	df.drop(columns=["id", "contributors", "timestamp"], inplace=True, errors='ignore')
 
-	#DailySleep
-	# https://api.ouraring.com/v1/sleep?start=YYYY-MM-DD&end=YYYY-MM-DD
+	# sleep
+	df2 = pd.DataFrame(responses["sleep"].json()["data"])
 
-	#DailyReadiness
-	# https://api.ouraring.com/v1/readiness?start=YYYY-MM-DD&end=YYYY-MM-DD
+	# Remove multiple entries per "day" - people should theoretically only have one "long_sleep" per day
+	# and that's what I think we care about.  
+	df2 = df2.loc[df2["type"]=="long_sleep"]
 
-	# Construct the v1 api URL
-	url = "https://api.ouraring.com/v1/" + dataType
+	# Drop columns we don't need
+	df2.drop(columns=["id", "sleep_algorithm_version", "time_in_bed", "heart_rate", "deep_sleep_duration",
+					"rem_sleep_duration", "restless_periods", "sleep_phase_5_min", "movement_30_sec",
+					"readiness_score_delta", "sleep_score_delta", "light_sleep_duration", "low_battery_alert",
+					"period", "readiness", "bedtime_end", "bedtime_start", "hrv", "type"], 
+					inplace=True, errors='ignore')
 
-	params={
-		'start': startDate,
-		'end': endDate
-	}
+	# Merge the two
+	sleep_df = pd.merge(df, df2, how="inner", on="day", left_index=False, right_index=False)
+	sleep_df.rename(columns={"latency":"onset_latency", "total_sleep_duration":"duration"}, inplace=True)
 
-	headers = {
-		'Authorization': 'Bearer ' + token
-	}
+	sleep_df["duration"] = sleep_df["duration"] / 60 # convert to minutes
+	sleep_df["onset_latency"] = sleep_df["onset_latency"] / 60 # convert to minutes
 
-	response = requests.request('GET', url, headers=headers, params=params)
-
-	# @todo error checking on  the response
-
-	df = pd.DataFrame(response.json()[dataType])
-
-	# Drop extra columns we're not going to use so we're not passing all that data back and forth
-	# Easy enough to come in here later and fix it if we want to use them
-	df.drop(columns=dropColumns, inplace=True, errors='ignore')
-
-	# rename column
-	df.rename(columns={"summary_date": "day"}, inplace=True, errors="raise")
-	df.set_index('day', inplace=True)
-
-	if dataType == "sleep":
-		df["duration"] = df["duration"] / 60 # convert to minutes
-		df["onset_latency"] = df["onset_latency"] / 60
+	sleep_df.set_index('day', inplace=True)
 
 	# rename all column names to prepend the type of data; makes figuring out later easier when all combined
 	# if activity is already in the column, don't need to worry about it
-	for column in df.columns.values:
+	for column in sleep_df.columns.values:
 		if not (dataType in column):
-			df.rename(columns={column: dataType + "_" + column}, inplace=True, errors="raise")
+			sleep_df.rename(columns={column: dataType + "_" + column}, inplace=True, errors="raise")
 
-	df = df.fillna(0)
-	
-	return df
+	sleep_df.fillna(0)
+
+	return sleep_df
 
 def getAllData(dataType, startDate, endDate, token):
 
@@ -303,8 +285,8 @@ def getAllData(dataType, startDate, endDate, token):
 	dataFunctions = {
 		"activity": getDailyDataV2, 
 		"heartrate": getDailyDataV2, 
-		"sleep": getDailyDataV1, 
-		"readiness": getDailyDataV1
+		"sleep": getSleepDataV2, 
+		"readiness": getDailyDataV2
 	}
 
 	for activity in dataFunctions.keys():
@@ -342,9 +324,40 @@ def getAllData(dataType, startDate, endDate, token):
 
 200 OK	Successful Response
 400 Query Parameter Validation Error	The request contains query parameters that are invalid or incorrectly formatted.
-426 Minimum App Version Error	The Oura user's mobile app does not meet the minimum app version requirement to support sharing the requested data type. The Oura user must update their mobile app to enable API access for the requested data type.
-429 Request Rate Limit Exceeded	The API is rate limited to 5000 requests in a 5 minute period. You will receive a 429 error code if you exceed this limit. Contact us if you expect your usage to exceed this limit.
+426 Minimum App Version Error	The Oura user's mobile app does not meet the minimum app version requirement to support sharing the requested data type. The Oura user 
+must update their mobile app to enable API access for the requested data type.
+429 Request Rate Limit Exceeded	The API is rate limited to 5000 requests in a 5 minute period. You will receive a 429 error code if you exceed this limit. Contact us 
+if you expect your usage to exceed this limit.
 '''
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('-token', type = str, required = False, help='Oura personal access token (required)')
+parser.add_argument('-interval', type = int, required = False, help='Number of unit to query data (required)')
+parser.add_argument('-unit', type = str, required = False, help='Unit to use [months, days, weeks] to query data (required)')
+parser.add_argument('-activity', type = str, required = False, help='Which activity to get (required)\nOne of: \n\t[activity, sleep, readiness]')
+
+args = parser.parse_args()
+
+pat = args.token
+interval_num = args.interval
+interval_unit = args.unit
+activity = args.activity
+
+activities = ["activity", "heartrate", "sleep", "readiness", "all"] # removed workouts
+
+# Removed the required = True from the add_argument in order to be able to flush the stdout after error
+# do some argument checking here
+if (not pat or not interval_num or not interval_unit or not activity or not activities.__contains__(activity)):
+	print("Invalid arguments.")
+
+	print('\t -token=<token> \t (str) Oura personal access token (required)')
+	print('\t -interval=<interval> \t (int) Number of unit to query data (required)')
+	print('\t -unit=<unit> \t (str) Unit to use with interval, one of [months, days, weeks] (required)')
+	print('\t-activity=<activity> \t (str) Which activity to get, one of [activity, sleep, readiness, heartrate, all] (required)')
+
+	sys.stdout.flush()
+	exit(-1)
 
 # grab all your data
 
@@ -380,10 +393,10 @@ enddatestr = enddate.strftime(dateformat)
 # Align requested data to appropriate function based on Oura's API
 dataFunctions = {
 	"activity": getDailyDataV2, 
-	"workouts": getDailyDataV2,
+	#"workouts": getDailyDataV2, @TODO fix this or remove; the charting doesn't support a workout chart yet
 	"heartrate": getDailyDataV2, 
-	"sleep": getDailyDataV1, 
-	"readiness": getDailyDataV1,
+	"sleep": getSleepDataV2, 
+	"readiness": getDailyDataV2,
 	"all": getAllData
 }
 

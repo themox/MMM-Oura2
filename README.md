@@ -49,7 +49,7 @@ var config = {
             position: "top_left",
             config: {
 		token: "",              // REQUIRED. your personal access token for Oura
-                charts: ["heartrate"],  // Which charts to display; currently one or both of ["sleep", "heartrate", "scores"]; eventually to be several
+                charts: ["heartrate"],  // Which charts to display; currently one or both of ["sleep", "heartrate", "scores", "activity"]; eventually to be several
                 unit:  "weeks",         // One of [months, days, weeks]
                 interval: 1,            // Integer interval to combine with unit for length of time to get & display data
                 ...

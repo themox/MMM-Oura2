@@ -1,10 +1,5 @@
 
 // normally get these from the config.js
-const activity = "all";
-const unit = "weeks";
-const interval = 2;
-const token = "HT25TUPZEPSLGL6L52X7VZF34BIQ5SZ6";
-
 
 //    ./oura.py -activity="all" -interval=3 -token="HT25TUPZEPSLGL6L52X7VZF34BIQ5SZ6" -unit="weeks"
 

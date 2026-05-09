@@ -19,13 +19,15 @@ Module.register("MMM-Oura2", {
 	
 	// Define required scripts
 	getScripts: function () {
-		return ["moment.js"];
+		// vendor/chart.umd.js is pulled down as part of npm install; will always have the latest version
+		// (or whatever version you've installed)
+		// package.json contains a script that on post-install copies this over into the local vendor directory here for use
+		return ["moment.js", this.file("vendor/chart.umd.js")];
 	},
 
 	// Define required scripts.
 	getStyles: function () {
-		// @todo fix this so it doesn't get chart.js from the web....
-		return ["MMM-Oura2.css", "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.8.0/chart.js"];
+		return ["MMM-Oura2.css"];
 	},
 
 	// Define start sequence
@@ -155,6 +157,12 @@ Module.register("MMM-Oura2", {
 
 		var canvas_list = document.createElement("ul");
 
+		if (!window.Chart) {
+			console.log("MMM-Oura2: Chart.js not loaded");
+			wrapper.innerHTML = "Chart.js not loaded.";
+			return wrapper;
+		}
+
 		for (chart_type of chart_types) {
 
 			if (!self.config.charts.includes(chart_type.type)) {
@@ -168,7 +176,7 @@ Module.register("MMM-Oura2", {
 			// uses some of the items from https://www.chartjs.org/docs/latest/configuration/elements.html#types
 			// but not all of them display well, so have removed some.
 			// if more than 4 shapes, they will repeat, but colors will be different based on palette algorithm
-	    		var shape_opts = ["circle", "rectRounded", "rectRot", "triangle"];
+	    	var shape_opts = ["circle", "rectRounded", "rectRot", "triangle"];
 			
 			var chartdiv = document.createElement('div');
 	                chartdiv.className = "chart ";
@@ -178,21 +186,8 @@ Module.register("MMM-Oura2", {
 			canvas.id = chartId;
 			var ctx = canvas.getContext('2d');
 
-			Chart.defaults.font.size = self.config.fontSize;
-			Chart.defaults.font.family = self.config.fontFamily;
-
-			// basic chart; will add options later
-			const myChart = new Chart(ctx, {
-				type: 'line',
-    				data: {}, 
-				options: {
-					scales: {
-            					y: {
-                					beginAtZero: false,
-            					}
-        				}
-    				}
-			});
+			window.Chart.defaults.font.size = self.config.fontSize;
+			window.Chart.defaults.font.family = self.config.fontFamily;
 
 			// Per Chart configurable variables
 	    		var yAxisLabel = chart_type.yAxisLabel;
@@ -387,9 +382,14 @@ Module.register("MMM-Oura2", {
 				options.scales.y1.title.display = true;
 			}
 
-			myChart.data.labels = finalLabels;	// X values
-			myChart.data.datasets = datasets;	// all the individual datasets
-			myChart.options = options;
+			new window.Chart(ctx, {
+				type: "line",
+				data: {
+					labels: finalLabels,
+					datasets: datasets,
+				},
+				options: options,
+			});
 
 			// Add to list; using CSS to remove bullets but this ensures the charts are separated from each other and not displayed on top of one another.
 			var canvas_list_item = document.createElement("li");
@@ -414,8 +414,6 @@ Module.register("MMM-Oura2", {
 	        label_array = labels[i].split("-");
 
 	        if (i == 0) {
-		    // @TODO: Do we want year for this chart?  Next line provides year.
-	            //label += label_array[0] + "/" + label_array[1] + "/"; 
 	            label += parseInt(label_array[1]) + "/";
 	        }
 
@@ -441,7 +439,7 @@ Module.register("MMM-Oura2", {
 		var palette = [
 			// https://www.pinterest.com/pin/522980575481583144/
                         // I'm colorblind, so relying on someone else to make colors for me.
-			// Below allwos 5 distinct colors in 4 unique palettes
+						// Below allows 5 distinct colors in 4 unique palettes
                         // summer
                         "rgba(35, 110, 150, .8)",
                         "rgba(21, 178, 211, .8)",
@@ -476,5 +474,4 @@ Module.register("MMM-Oura2", {
 
 		return palette[ind];
 	},
-
 });

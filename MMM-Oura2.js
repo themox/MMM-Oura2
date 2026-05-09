@@ -24,6 +24,7 @@ Module.register("MMM-Oura2", {
 
 	// Define required scripts.
 	getStyles: function () {
+		// @todo fix this so it doesn't get chart.js from the web....
 		return ["MMM-Oura2.css", "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.8.0/chart.js"];
 	},
 

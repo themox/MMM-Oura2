@@ -35,31 +35,32 @@ To install the module, use your terminal to:
 If you want to just do a quick test to see if your personal token is working, you can use this command at the command line, from the MMM-Oura2 directory.  `oura_data.js` effectively replaces the old Python script and allows you to query your data directly.
 `node oura_data.js --token="YOUR_TOKEN_HERE" --interval=7 --unit=days --activity=all`
 
+## Update Instructions
+
+From the MagicMirror\modules\MMM-Oura2\ path:
+1. Pull down the latest files from GitHub:<br/>`git pull` 
+2. Ensure required apis installed:<br />`npm install axios lodash luxon yargs chart.js --save`
+3. ensure the packages are up-to-date<br/> `npm update`
+
 ## Using the module
 
 ### MagicMirror² Configuration
 
 To use this module, add the following configuration block to the modules array in the `config/config.js` file:
 ```js
-var config = {
-    modules: [
+{
+    module: 'MMM-Oura2',
+    header: "Oura Data",
+    position: "top_left",
+    config: {
+        token: "",              // REQUIRED. your personal access token for Oura
+        charts: ["heartrate"],  // Which charts to display; currently one or more of ["sleep", "heartrate", "scores", "activity"];
+        unit:  "weeks",         // One of [months, days, weeks]
+        interval: 1,            // Integer interval to combine with unit for length of time to get & display data
         ...
-        {
-            module: 'MMM-Oura2',
-            header: "Oura Data",
-            position: "top_left",
-            config: {
-		        token: "",              // REQUIRED. your personal access token for Oura
-                charts: ["heartrate"],  // Which charts to display; currently one or more of ["sleep", "heartrate", "scores", "activity"];
-                unit:  "weeks",         // One of [months, days, weeks]
-                interval: 1,            // Integer interval to combine with unit for length of time to get & display data
-                ...
-                // See below for detailed Configuration Options
-            }
-        },
-        ...
-    ]
-}
+        // See below for detailed Configuration Options
+    }
+},
 ```
 
 ### Configuration Options
@@ -93,3 +94,7 @@ This is intended to be a local/self-hosted integration for you to access and vie
 I do not collect or receive your Oura data.
 
 You must create your own Oura API key to use this module.
+
+## Developer commands
+- `node --run lint` - Run linting checks.
+- `node --run lint:fix` - Fix automatically fixable linting errors.

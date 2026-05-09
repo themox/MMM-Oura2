@@ -1,0 +1,43 @@
+{
+  "name": "mmm-oura2",
+  "version": "1.0.0",
+  "description": "Module for the [MagicMirror²](https://github.com/MichMich/MagicMirror/) smart mirror.",
+  "main": "MMM-Oura2.js",
+  "scripts": {
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "prepare": "simple-git-hooks"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/themox/MMM-Oura2.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/themox/MMM-Oura2/issues"
+  },
+  "homepage": "https://github.com/themox/MMM-Oura2#readme",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "eslint": "^10.3.0",
+    "globals": "^17.6.0",
+    "lint-staged": "^17.0.4",
+    "simple-git-hooks": "^2.13.1"
+  },
+  "lint-staged": {
+    "*.{js,mjs}": "eslint --fix"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged"
+  },
+  "dependencies": {
+    "axios": "^1.16.0",
+    "chart.js": "^4.5.1",
+    "lodash": "^4.18.1",
+    "luxon": "^3.7.2",
+    "yargs": "^18.0.0"
+  }
+}

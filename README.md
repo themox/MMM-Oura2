@@ -15,6 +15,7 @@ I don't get the sense many people are using this beyond me, but if you are and l
 * Which charts would you like to see?<br>
 
 ### Example
+
 ![Example of MMM-Oura2](images/sample.png?raw=true "Example screenshot")
 
 ### Dependencies
@@ -26,12 +27,14 @@ I don't get the sense many people are using this beyond me, but if you are and l
 5. yargs
 
 ## Installation
+
 To install the module, use your terminal to:
 1. Navigate to your MagicMirror's modules folder. If you are using the default installation directory, use the command:<br />`cd ~/MagicMirror/modules`
 2. Clone the module:<br />`git clone https://github.com/themox/MMM-Oura2.git`
-3. Install required apis:<br />`npm install axios lodash luxon yargs chart.js --save`
+3. Install required apis:<br />`npm install`
 
 ## Testing
+
 If you want to just do a quick test to see if your personal token is working, you can use this command at the command line, from the MMM-Oura2 directory.  `oura_data.js` effectively replaces the old Python script and allows you to query your data directly.
 `node oura_data.js --token="YOUR_TOKEN_HERE" --interval=7 --unit=days --activity=all`
 
@@ -39,8 +42,8 @@ If you want to just do a quick test to see if your personal token is working, yo
 
 From the MagicMirror\modules\MMM-Oura2\ path:
 1. Pull down the latest files from GitHub:<br/>`git pull` 
-2. Ensure required apis installed:<br />`npm install axios lodash luxon yargs chart.js --save`
-3. ensure the packages are up-to-date<br/> `npm update`
+2. Remove the old npm files:<br/> `rm -rf node_modules package-lock.json`
+3. Install new/updated apis:<br />`npm install`
 
 ## Using the module
 

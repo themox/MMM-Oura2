@@ -6,7 +6,8 @@
   "scripts": {
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "prepare": "simple-git-hooks"
+    "prepare": "simple-git-hooks",
+    "postinstall": "node scripts/copy_vendor.js"
   },
   "repository": {
     "type": "git",

@@ -4,14 +4,15 @@ Module for the [MagicMirror²](https://github.com/MichMich/MagicMirror/) smart m
 
 Displays a user's Oura data in a chart.  Inspired by https://github.com/erchenger/MMM-Oura, but I was looking for a little more data.  Still a work in progress but feature requests and feedback are welcome.
 <br><br>
-This module uses a python backend, primarily through Pandas, to download the data from Oura.  On a request for update (on load, or on the pre-programmed interval), the javascript module sends a request to the python for updated data.  
-The python downloads that data from Oura, processes through Pandas for data formatting and management, and then pushes back to the javascript in an easily parsable format.  On receipt, the javascript pushes that into a chart.js canvas, which
-is then rendered by the getDom function when called.
+When I first made this app, I had just learned Pandas and was very excited about it, so I made this based on a Python backend using Pandas as the primary library to organize the data.  These days I realize that is an unnecessary layer on top of the MagicMirror framework, so I have reworked the app to be exclusively in JS.  I still love Pandas but realize it may not be The Tool for all situations.
 <br><br>
+This version of MMM-Oura2 drops the Python backend entirely, uses the Oura V2 api, but still uses the old Personal Authentication Token style to log in and get your data.  I'll work on supporting the new authentication style shortly, but for now continue to use your original PAT which should still work per the Oura API documentation.
+<br>
+
+I don't get the sense many people are using this beyond me, but if you are and like it, I am interested in your feedback about how I can make it better.
 
 * Which features would you like to see?<br>
 * Which charts would you like to see?<br>
-
 
 ### Example
 ![Example of MMM-Oura2](images/sample.png?raw=true "Example screenshot")
@@ -19,20 +20,20 @@ is then rendered by the getDom function when called.
 ### Dependencies
 
 1. Chart.js
-2. Python3, including the following modules/packages:<br>
-*Pandas<br>
-*Numpy<br>
-*Requests<br>
-
-Assumes python3 is located at /usr/bin/python3
-
+2. axios
+3. lodash
+4. luxon
+5. yargs
 
 ## Installation
 To install the module, use your terminal to:
 1. Navigate to your MagicMirror's modules folder. If you are using the default installation directory, use the command:<br />`cd ~/MagicMirror/modules`
 2. Clone the module:<br />`git clone https://github.com/themox/MMM-Oura2.git`
-3. Install Chart.js framework:<br />`npm install chart.js`
-4. Ensure you have the correct Python version (3+) and libraries installed.
+3. Install required apis:<br />`npm install axios lodash luxon yargs chart.js --save`
+
+## Testing
+If you want to just do a quick test to see if your personal token is working, you can use this command at the command line, from the MMM-Oura2 directory.  `oura_data.js` effectively replaces the old Python script and allows you to query your data directly.
+`node oura_data.js --token="YOUR_TOKEN_HERE" --interval=7 --unit=days --activity=all`
 
 ## Using the module
 
@@ -48,8 +49,8 @@ var config = {
             header: "Oura Data",
             position: "top_left",
             config: {
-		token: "",              // REQUIRED. your personal access token for Oura
-                charts: ["heartrate"],  // Which charts to display; currently one or both of ["sleep", "heartrate", "scores", "activity"]; eventually to be several
+		        token: "",              // REQUIRED. your personal access token for Oura
+                charts: ["heartrate"],  // Which charts to display; currently one or more of ["sleep", "heartrate", "scores", "activity"];
                 unit:  "weeks",         // One of [months, days, weeks]
                 interval: 1,            // Integer interval to combine with unit for length of time to get & display data
                 ...
@@ -78,3 +79,17 @@ var config = {
 | `fontSize`              | Integer font size for chart labels <br>**Default value:** `12`
 | `fontFamily`            | Which font or font family to use for chart text; see [Chart.js fonts](https://www.chartjs.org/docs/latest/general/fonts.html)  <br>**Default value:** `Roboto Condensed`
 | `legendPosition`        | Where on the chart to display the legend; conforms to [Chart.js legend styling](https://www.chartjs.org/docs/latest/configuration/legend.html#position)  <br>**Default value:** `bottom`
+
+
+Oura's new API requires me to show you the below items as well:
+
+## Terms of Use:
+
+This code is provided free of charge, to be used at your own risk.  It is intended to provide you some control over your own data, to be used in the MagicMirror framework.
+
+## Privacy Policy:
+
+This is intended to be a local/self-hosted integration for you to access and view your own Oura data.
+I do not collect or receive your Oura data.
+
+You must create your own Oura API key to use this module.

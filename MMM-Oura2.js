@@ -28,7 +28,7 @@ Module.register("MMM-Oura2", {
 	},
 
 	// Define start sequence
-	start: function() {
+	start: function() { 
 		var self = this;
 
 		self.chartdata;

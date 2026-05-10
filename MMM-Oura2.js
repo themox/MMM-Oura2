@@ -1,20 +1,20 @@
 Module.register("MMM-Oura2", {
 	// Default module config.
 	defaults: {
-                token: "", 		// REQUIRED. your personal access token for Oura
-                charts: ["scores"],     // which charts to display; currently one or both of ["heartrate", "scores", "sleep", "activity"]; eventually to be several
-                unit:  "weeks",         // one of [months, days, weeks]
-                interval: 1,            // integer interval to combine with unit for length of time to get & display data
-		updateInterval: 10000*60*60, // default to every 60 minutes (ms)
-		palette: 0,		// an integer between 0 and 3
-                lineWeight: 1,		// determines line plot thickness; all line plots are the same thickness
-                dotWeight: 3,		// determines plot point size
+		token: "", 				// REQUIRED. your personal access token for Oura
+		charts: ["scores"],     // which charts to display; currently one or both of ["heartrate", "scores", "sleep", "activity"]; eventually to be several
+		unit:  "weeks",         // one of [months, days, weeks]
+		interval: 1,            // integer interval to combine with unit for length of time to get & display data
+		updateInterval: 10000*60*60,	// default to every 60 minutes (ms)
+		palette: 0,				// an integer between 0 and 3
+		lineWeight: 1,			// determines line plot thickness; all line plots are the same thickness
+		dotWeight: 3,			// determines plot point size
 		// https://www.chartjs.org/docs/latest/general/colors.html Colors from the chart
-                chartTextColor: 'gray',
-                chartGridColor: 'rgba(50, 50, 50, .8)',
-		fontSize: 12, // https://www.chartjs.org/docs/latest/general/fonts.html
+		chartTextColor: 'gray',
+		chartGridColor: 'rgba(50, 50, 50, .8)',
+		fontSize: 12, 			// https://www.chartjs.org/docs/latest/general/fonts.html
 		fontFamily: 'Roboto Condensed',
-		legendPosition: 'bottom', // https://www.chartjs.org/docs/latest/configuration/legend.html#position
+		legendPosition: 'bottom', 	// https://www.chartjs.org/docs/latest/configuration/legend.html#position
 	},
 	
 	// Define required scripts
@@ -39,7 +39,6 @@ Module.register("MMM-Oura2", {
 		Log.info("Starting module: " + this.name);
 		self.chart_wrapper;
 		self.loaded = false;
-
 
 		// enforce ranges on configurable integer values in order to ensure somewhat sane behavior
 		if (self.config.updateInterval < 2000) {
@@ -66,13 +65,12 @@ Module.register("MMM-Oura2", {
 			self.config.dotWeight = 10;
 		}
 
-
-
 		// Create repeating call to node_helper get list
 		setInterval(function() {
 			self.sendSocketNotification("REQUEST_UPDATE", self.config);
 		}, self.config.updateInterval);
 
+		console.log("MMM-Oura2 sending MODULE_READY");
 		self.sendSocketNotification("MODULE_READY", self.config);
 	},
 
@@ -179,8 +177,8 @@ Module.register("MMM-Oura2", {
 	    	var shape_opts = ["circle", "rectRounded", "rectRot", "triangle"];
 			
 			var chartdiv = document.createElement('div');
-	                chartdiv.className = "chart ";
-        	        chartdiv.className += this.config.tableClass;
+			chartdiv.className = "chart ";
+			chartdiv.className += this.config.tableClass;
 
 			var canvas = document.createElement('canvas');
 			canvas.id = chartId;
@@ -190,42 +188,40 @@ Module.register("MMM-Oura2", {
 			window.Chart.defaults.font.family = self.config.fontFamily;
 
 			// Per Chart configurable variables
-	    		var yAxisLabel = chart_type.yAxisLabel;
-	    		var maxYAxis = chart_type.max;
-	    		var hasMax = false;
+			var yAxisLabel = chart_type.yAxisLabel;
+			var maxYAxis = chart_type.max;
+			var hasMax = false;
 			var labelColumns = chart_type.labelColumns;
 
-    			// configurable options
-    			var palette = self.config.palette;
-    			var lineWeight = self.config.lineWeight;
-    			var dotWeight = self.config.dotWeight;
+			// configurable options
+			var palette = self.config.palette;
+			var lineWeight = self.config.lineWeight;
+			var dotWeight = self.config.dotWeight;
 			var chartTextColor = self.config.chartTextColor;
 			var chartGridColor = self.config.chartGridColor;
 
 			// housekeeping variables for loop and chart building
 
-    			var finalLabels = [];
+			var finalLabels = [];
 
    			var hasLabels = false;
 
-    			var numColumns = columns.length;
-    			var colNum = 0;
+			var numColumns = columns.length;
+			var colNum = 0;
 
 			var datasets = [];
 
 			// get every series we want to display in this chart
 			// more efficient way to do it would be to loop through columns 
-	    		for (column in ouradata) {
+	    	for (column in ouradata) {
 
 				var dataSet = {};
+				colNum ++;
 
-        			colNum ++;
-
-
-        			if (!columns.includes(column)) {
-            				// Only pick up the columns we want
-            				continue;
-        			}
+				if (!columns.includes(column)) {
+						// Only pick up the columns we want
+						continue;
+				}
 
 				// Text label for this data series on the legend
 				if (labelColumns) {
@@ -234,43 +230,42 @@ Module.register("MMM-Oura2", {
 					dataSet.label = column;
 				}
 
+				data = [];
+				labels = [];
 
-        			data = [];
-        			labels = [];
+				for (key in ouradata[column]) {
 
-        			for (key in ouradata[column]) {
+						if (!hasLabels) {
+							labels.push(key);
+						}
 
-            				if (!hasLabels) {
-                				labels.push(key);
-            				}
+						data.push(ouradata[column][key]);
+				}
 
-	            			data.push(ouradata[column][key]);
-        			}
+				if (!hasLabels) {
+						finalLabels = this.processLabels(labels);
 
-        			if (!hasLabels) {
-            				finalLabels = this.processLabels(labels);
-
-            				hasLabels = true;
-        			}
+						hasLabels = true;
+				}
 
 				dataArray = [];
 				colorArray = [];
-        			for (item in data) {
-        	    			if (data[item] == 0) {
-						dataArray.push(null);
-            				} else {
-						dataArray.push(data[item]);
-            				}
-					colorArray.push(this.buildColorStr(colNum, palette));
-        			}
+				for (item in data) {
+						if (data[item] == 0) {
+					dataArray.push(null);
+						} else {
+					dataArray.push(data[item]);
+						}
+				colorArray.push(this.buildColorStr(colNum, palette));
+				}
 
 				dataSet.data = dataArray;
 				dataSet.borderWidth = lineWeight;
 				dataSet.borderColor = colorArray;
 
-        			// automate shapes based on choices; rotate through options
-        			shp = colNum % shape_opts.length;
-        			shape_sel = shape_opts[shp];
+				// automate shapes based on choices; rotate through options
+				shp = colNum % shape_opts.length;
+				shape_sel = shape_opts[shp];
 
 				dataSet.pointStyle = shape_sel;
 				dataSet.pointRadius = dotWeight;
@@ -278,13 +273,11 @@ Module.register("MMM-Oura2", {
 
 				datasets.push(dataSet);
 
-
 				// Set up multiple axes for the graphs if required
 				if (chart_type.yAxes) {
 					dataSet.yAxisID = chart_type.yAxes[columns.indexOf(column)];
 				}
-
-    			}
+			}
 
 			// Build out remaining chart options
 			var options = {
@@ -294,75 +287,75 @@ Module.register("MMM-Oura2", {
 						display: true,
 						type: "linear",
 						position: "left",
-            					title: {
-                    					text: yAxisLabel,
-                    					display: true,
-                    					color: chartTextColor,
-                				},
-                				ticks: {
-                    					color: chartTextColor,
-                				},
-                				grid: {
-                    					color: chartGridColor,
-                				},
+							title: {
+								text: yAxisLabel,
+								display: true,
+								color: chartTextColor,
+							},
+							ticks: {
+								color: chartTextColor,
+							},
+							grid: {
+								color: chartGridColor,
+							},
         				},
-                                        y1: {
-						display: false,
-						type: "linear",
-                                                beginAtZero: false,
-						position: "right",
-                                                title: {
-                                                        display: false,
-                                                        color: chartTextColor,
-                                                },
-                                                ticks: {
-                                                        color: chartTextColor,
-                                                },
-                                                grid: {
-							drawOnChartArea: false,
-                                                },
-                                        },
-                                        y2: {
-                                                display: false,
-                                                type: "linear",
-                                                beginAtZero: false,
-                                                position: "right",
-                                                title: {
-                                                        display: false,
-                                                        color: chartTextColor,
-                                                },
-                                                ticks: {
-                                                        color: chartTextColor,
-                                                },
-                                                grid: {
-                                                        drawOnChartArea: false,
-                                                },
-                                        },
+						y1: {
+							display: false,
+							type: "linear",
+							beginAtZero: false,
+							position: "right",
+							title: {
+								display: false,
+								color: chartTextColor,
+							},
+							ticks: {
+								color: chartTextColor,
+							},
+							grid: {
+								drawOnChartArea: false,
+							},
+							},
+						y2: {
+							display: false,
+							type: "linear",
+							beginAtZero: false,
+							position: "right",
+							title: {
+									display: false,
+									color: chartTextColor,
+							},
+							ticks: {
+									color: chartTextColor,
+							},
+							grid: {
+									drawOnChartArea: false,
+							},
+						},
         				x: {
-            					ticks: {
-                					color: chartTextColor,
-            					},
-            					grid: {
-                					color: chartGridColor,
-            					},
+							ticks: {
+								color: chartTextColor,
+							},
+							grid: {
+								color: chartGridColor,
+							},
         				},
     				},
     				plugins: {
         				legend: {
-            					labels: {
-                					usePointStyle: true,
-                					color: chartTextColor,
-            					},
-            					position: self.config.legendPosition,
+							labels: {
+								usePointStyle: true,
+								color: chartTextColor,
+							},
+							position: self.config.legendPosition,
         				},
        	 				title: {
-            					display: true,
-            					color: chartTextColor,
-            					text: chartTitle,
-            					padding: {
-                					top: 0,
-                					bottom: 10,
-            					}
+							display: true,
+							color: chartTextColor,
+							text: chartTitle,
+							padding: {
+								top: 0,
+								bottom: 10,
+							}
         				},
     				}
 			};
@@ -371,11 +364,10 @@ Module.register("MMM-Oura2", {
 				options.scales.y1.display = true;
 			}
 
-                        if (chart_type.max) {
+			if (chart_type.max) {
 				// Set a y-axis max value if the chart-type should have it.
 				options.scales.y.max = chart_type.max;
-                                //console.log("Chart y max = " + chart_type.max);
-                        }
+			}
 
 			if (chart_type.yAxisLabel2) {
 				options.scales.y1.title.text = chart_type.yAxisLabel2;
@@ -438,35 +430,35 @@ Module.register("MMM-Oura2", {
 
 		var palette = [
 			// https://www.pinterest.com/pin/522980575481583144/
-                        // I'm colorblind, so relying on someone else to make colors for me.
-						// Below allows 5 distinct colors in 4 unique palettes
-                        // summer
-                        "rgba(35, 110, 150, .8)",
-                        "rgba(21, 178, 211, .8)",
-                        "rgba(255, 215, 0, .8)",
-                        "rgba(243, 135, 47, .8)",
-                        "rgba(255, 89, 143, .8)",
+			// I'm colorblind, so relying on someone else to make colors for me.
+			// Below allows 5 distinct colors in 4 unique palettes
+			// summer
+			"rgba(35, 110, 150, .8)",
+			"rgba(21, 178, 211, .8)",
+			"rgba(255, 215, 0, .8)",
+			"rgba(243, 135, 47, .8)",
+			"rgba(255, 89, 143, .8)",
 
-                        // winter
-                        "rgba(66, 104, 124, .8)",
-                        "rgba(132, 165, 184, .8)",
-                        "rgba(179, 218, 241, .8)",
-                        "rgba(203, 203, 203, .8)",
-                        "rgba(112, 117, 113, .8)",
+			// winter
+			"rgba(66, 104, 124, .8)",
+			"rgba(132, 165, 184, .8)",
+			"rgba(179, 218, 241, .8)",
+			"rgba(203, 203, 203, .8)",
+			"rgba(112, 117, 113, .8)",
 
-                        // spring
-                        "rgba(243, 168, 188, .8)",
-                        "rgba(245, 173, 148, .8)",
-                        "rgba(255, 241, 166, .8)",
-                        "rgba(180, 249, 165, .8)",
-                        "rgba(158, 231, 245, .8)",
+			// spring
+			"rgba(243, 168, 188, .8)",
+			"rgba(245, 173, 148, .8)",
+			"rgba(255, 241, 166, .8)",
+			"rgba(180, 249, 165, .8)",
+			"rgba(158, 231, 245, .8)",
 
-                        // autumn
-                        "rgba(96, 60, 20, .8)",
-                        "rgba(156, 39, 6, .8)",
-                        "rgba(212, 91, 18, .8)",
-                        "rgba(243, 188, 46, .8)",
-                        "rgba(95, 84, 38, .8)",
+			// autumn
+			"rgba(96, 60, 20, .8)",
+			"rgba(156, 39, 6, .8)",
+			"rgba(212, 91, 18, .8)",
+			"rgba(243, 188, 46, .8)",
+			"rgba(95, 84, 38, .8)",
 		];
 
 		// colNum is 1-indexed

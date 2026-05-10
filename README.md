@@ -2,11 +2,11 @@
 
 Module for the [MagicMirror²](https://github.com/MichMich/MagicMirror/) smart mirror.
 
-Displays a user's Oura data in a chart.  Inspired by https://github.com/erchenger/MMM-Oura, but I was looking for a little more data.  Still a work in progress but feature requests and feedback are welcome.
+Displays a user's Oura data in a chart.  Inspired by [MMM-Oura](https://github.com/erchenger/MMM-Oura), but I was looking for a little more data.  Still a work in progress but feature requests and feedback are welcome.
 <br><br>
 When I first made this app, I had just learned Pandas and was very excited about it, so I made this based on a Python backend using Pandas as the primary library to organize the data.  These days I realize that is an unnecessary layer on top of the MagicMirror framework, so I have reworked the app to be exclusively in JS.  I still love Pandas but realize it may not be The Tool for all situations.
 <br><br>
-This version of MMM-Oura2 drops the Python backend entirely, uses the Oura V2 api, but still uses the old Personal Authentication Token style to log in and get your data.  I'll work on supporting the new authentication style shortly, but for now continue to use your original PAT which should still work per the Oura API documentation.
+This version of MMM-Oura2 drops the Python backend entirely, uses the Oura V2 api, and now uses the new OAuth2 workflow.  If you still have a PAT and don't want to update to the OAuth2 method, you can use the older commit, `891df51`.  I won't be updating that method anymore, though, since Oura has moved to this new style.  All future updates to functionality and features will use OAuth2.
 <br>
 
 I don't get the sense many people are using this beyond me, but if you are and like it, I am interested in your feedback about how I can make it better.
@@ -33,10 +33,49 @@ To install the module, use your terminal to:
 2. Clone the module:<br />`git clone https://github.com/themox/MMM-Oura2.git`
 3. Install required apis:<br />`npm install`
 
+## OAuth2 Workflow Setup
+MMM-Oura2 uses OAuth2 and requires a one-time (ish) authorization step.  This is the new required mechanism from the Oura developer site.  Follow these instructions after installation in order to set this up on your machine.
+
+1. Create an Oura API application
+* Create an app at [the new Oura Developer site](https://developer.ouraring.com/applications).
+* Configure redirect URL (use this hard-coded one): `http://localhost:53682/callback`
+* After you save the app, copy the created `Client ID` and `Client Secret` to use for the next step.
+2. Create an OAuth credentials file
+* In your base MMM-Oura2 folder, create `oura_credentials.json`.
+<br/>`touch oura_credentials.json`.
+* Then paste in the following:<br/>
+
+```js
+{
+  "installed": {
+    "client_id": "YOUR_CLIENT_ID",
+    "client_secret": "YOUR_CLIENT_SECRET",
+    "redirect_uri": "http://localhost:53682/callback"
+  }
+}
+```
+
+<br/>
+Use the Client ID and Client Secret you got from your app page here.  Note that the URL is the same one you used in the step above when you created your app.
+
+3. Run one-time OAuth Authentication
+* Execute this command from your MMM-Oura2 folder:<br/> `node get_oura_token.js`
+* The script will:
+    - Print an authorization URL
+    - Ask you to open it in a browser
+    - Redirect to a localhost URL that will fail (that's ok)
+    - Copy the full redirected URL from the browser URL window back into the terminal at the prompt given.
+* This creates a new file, `oura_auth.json`
+
+4. Configure Oura module inside MagicMirror `config.js` as described below.
+
+5. Restart MagicMirror.
+
 ## Testing
 
-If you want to just do a quick test to see if your personal token is working, you can use this command at the command line, from the MMM-Oura2 directory.  `oura_data.js` effectively replaces the old Python script and allows you to query your data directly.
-`node oura_data.js --token="YOUR_TOKEN_HERE" --interval=7 --unit=days --activity=all`
+If you want to just do a quick test to see if your token setup is working, you can use the command below at the command line, from the MMM-Oura2 directory.  `oura_data.js` effectively replaces the old Python script and allows you to query your data directly.<br/>
+`node oura_data.js --interval=1 --unit=weeks --activity=all`<br/>
+That should dump a week's worth of activity from your Oura data.  If it fails in some way, you'll need to troubleshoot why.  If it works, then you should be good to go.
 
 ## Update Instructions
 
@@ -56,7 +95,6 @@ To use this module, add the following configuration block to the modules array i
     header: "Oura Data",
     position: "top_left",
     config: {
-        token: "",              // REQUIRED. your personal access token for Oura
         charts: ["heartrate"],  // Which charts to display; currently one or more of ["sleep", "heartrate", "scores", "activity"];
         unit:  "weeks",         // One of [months, days, weeks]
         interval: 1,            // Integer interval to combine with unit for length of time to get & display data
@@ -66,11 +104,12 @@ To use this module, add the following configuration block to the modules array i
 },
 ```
 
+Note that token information is no longer included in the config.js portion; this is now captured elsewhere (See OAuth2 workflow discussed above).
+
 ### Configuration Options
 
 | Option                  | Details
 |------------------------ |--------------
-| `token`                 | *Required* - Your Oura Personal Access token - see [Oura documentation](https://cloud.ouraring.com/docs/authentication)
 | `charts`                | *Required* - Array of which charts to display. All charts will get the same style information from the below configuration options. <br> **Possible values:** `sleep`  `scores`  `heartrate`  `activity`<br> **Default value:** `["scores"]`
 | `unit`                  | *Required* - Combined with interval, amount of days to display in chart <br> **Possible values:** `months`  `weeks`  `days` <br> **Default value:** `weeks`
 | `interval`              | *Required* - Integer number to combine with unit for number of days to display in chart (e.g. 1 weeks will give 7 days) <br> **Default value:** `1`

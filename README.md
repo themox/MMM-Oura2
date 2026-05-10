@@ -1,6 +1,6 @@
 # MMM-Oura2
 
-Module for the [MagicMirror²](https://github.com/MichMich/MagicMirror/) smart mirror.
+Module for the [MagicMirror²](https://github.com/MagicMirrorOrg/MagicMirror/) smart mirror.
 
 Displays a user's Oura data in a chart.  Inspired by [MMM-Oura](https://github.com/erchenger/MMM-Oura), but I was looking for a little more data.  Still a work in progress but feature requests and feedback are welcome.
 <br><br>
@@ -21,10 +21,9 @@ I don't get the sense many people are using this beyond me, but if you are and l
 ### Dependencies
 
 1. Chart.js
-2. axios
-3. lodash
-4. luxon
-5. yargs
+2. lodash
+3. luxon
+4. yargs
 
 ## Installation
 

@@ -3,7 +3,6 @@ const { getOuraData } = require("./oura_data.js");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
-const axios = require("axios");
 
 const tokenPath = path.join(__dirname, "oura_auth.json");
 
@@ -86,19 +85,32 @@ async function getAccessToken(config) {
     return tokens.access_token;
   }
 
-  const tokenResp = await axios.post(
-    "https://api.ouraring.com/oauth/token",
-    new URLSearchParams({
+  const resp = await fetch(
+  "https://api.ouraring.com/oauth/token",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({
       grant_type: "refresh_token",
       refresh_token: tokens.refresh_token,
       client_id: config.clientId,
-      client_secret: config.clientSecret
+      client_secret: config.clientSecret,
     }),
-    { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
-  );
+  }
+);
 
-  saveTokens(tokenResp.data);
-  return tokenResp.data.access_token;
+if (!resp.ok) {
+  throw new Error(
+    `HTTP ${resp.status}: ${await resp.text()}`
+  );
+}
+
+const tokenResp = await resp.json();
+
+  saveTokens(tokenResp);
+  return tokenResp.access_token;
 }
 
 module.exports = NodeHelper.create({

@@ -14,7 +14,6 @@ function loadTokenFromFile() {
   return tokens.access_token;
 }
 
-const axios = require("axios");
 const _ = require("lodash");
 const { DateTime } = require("luxon");
 const yargs = require("yargs/yargs");
@@ -80,13 +79,24 @@ function rowsToColumns(rows, indexKey = "day") {
 }
 
 async function getHttpResponse(page, startDate, endDate, token) {
-  return axios.get(`${OURA_BASE}/${page}`, {
-    headers: authHeaders(token),
-    params: {
+  const url =
+    `${OURA_BASE}/${page}?` +
+    new URLSearchParams({
       start_date: startDate,
       end_date: endDate,
-    },
+    });
+
+  const resp = await fetch(url, {
+    headers: authHeaders(token),
   });
+
+  if (!resp.ok) {
+    throw new Error(
+      `HTTP ${resp.status}: ${await resp.text()}`
+    );
+  }
+
+  return await resp.json();
 }
 
 async function getHRData(startDate, endDate, token) {
@@ -106,13 +116,23 @@ async function getHRData(startDate, endDate, token) {
 
     if (nextToken) params.next_token = nextToken;
 
-    const response = await axios.get(url, {
-      headers: authHeaders(token),
-      params,
-    });
+    const resp = await fetch(
+    `${url}?${new URLSearchParams(params)}`,
+      {
+        headers: authHeaders(token),
+      }
+    );
 
-    rows.push(...(response.data.data || []));
-    nextToken = response.data.next_token;
+    if (!resp.ok) {
+      throw new Error(
+        `HTTP ${resp.status}: ${await resp.text()}`
+      );
+    }
+
+    const response = await resp.json();
+
+    rows.push(...(response.data || []));
+    nextToken = response.next_token;
   } while (nextToken);
 
   const grouped = _.groupBy(rows, row =>
@@ -183,7 +203,7 @@ async function getDailyDataV2(dataType, startDate, endDate, token) {
   }
 
   const response = await getHttpResponse(url, startDate, endDate, token);
-  let rows = response.data.data || [];
+  let rows = response.data || [];
 
   if (dataType === "workouts") {
     rows = rows.map(row => ({

@@ -4,6 +4,16 @@ module.exports = {
   getOuraData
 };
 
+const fs = require("fs");
+const path = require("path");
+
+const TOKEN_PATH = path.join(__dirname, "oura_auth.json");
+
+function loadTokenFromFile() {
+  const tokens = JSON.parse(fs.readFileSync(TOKEN_PATH, "utf8"));
+  return tokens.access_token;
+}
+
 const axios = require("axios");
 const _ = require("lodash");
 const { DateTime } = require("luxon");
@@ -347,7 +357,7 @@ async function main() {
   const argv = yargs(hideBin(process.argv))
     .option("token", {
       type: "string",
-      demandOption: true,
+      demandOption: false,
       describe: "Oura personal access token",
     })
     .option("interval", {
@@ -381,6 +391,8 @@ async function main() {
     process.exit(1);
   }
 
+  const token = argv.token || loadTokenFromFile();
+
   const today = DateTime.now();
 
   let startDateObj;
@@ -399,22 +411,22 @@ async function main() {
   let rows;
 
   if (argv.activity === "heartrate") {
-    rows = await getHRData(startDate, endDate, argv.token);
+    rows = await getHRData(startDate, endDate, token);
   } else if (argv.activity === "sleep") {
     rows = await getSleepDataV2(
       "sleep",
       startDate,
       endDate,
-      argv.token
+      token
     );
   } else if (argv.activity === "all") {
-    rows = await getAllData(startDate, endDate, argv.token);
+    rows = await getAllData(startDate, endDate, token);
   } else {
     rows = await getDailyDataV2(
       argv.activity,
       startDate,
       endDate,
-      argv.token
+      token
     );
   }
 

@@ -1,2 +1,4 @@
 node_modules
 vendor
+oura_auth.json
+credentials.json

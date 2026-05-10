@@ -6,7 +6,6 @@
  *
  * Requires:
  *   - oura_credentials.json
- *   - npm install axios
  *
  * Creates:
  *   - oura_auth.json
@@ -14,7 +13,6 @@
 
 const fs = require("fs");
 const readline = require("readline");
-const axios = require("axios");
 const crypto = require("crypto");
 
 const CREDS_PATH = "credentials.json";
@@ -69,27 +67,35 @@ rl.question(
         throw new Error("OAuth state mismatch.");
       }
 
-      const resp = await axios.post(
+      const resp = await fetch(
         "https://api.ouraring.com/oauth/token",
-        new URLSearchParams({
-          grant_type: "authorization_code",
-          code,
-          redirect_uri: REDIRECT_URI,
-          client_id: CLIENT_ID,
-          client_secret: CLIENT_SECRET,
-        }),
         {
+          method: "POST",
           headers: {
-            "Content-Type":
-              "application/x-www-form-urlencoded",
+            "Content-Type": "application/x-www-form-urlencoded",
           },
+          body: new URLSearchParams({
+            grant_type: "authorization_code",
+            code,
+            redirect_uri: REDIRECT_URI,
+            client_id: CLIENT_ID,
+            client_secret: CLIENT_SECRET,
+          }),
         }
       );
 
+      if (!resp.ok) {
+        throw new Error(
+          `HTTP ${resp.status}: ${await resp.text()}`
+        );
+      }
+
+      const data = await resp.json();
+
       const tokens = {
-        ...resp.data,
+        ...data,
         expires_at:
-          Date.now() + resp.data.expires_in * 1000,
+          Date.now() + data.expires_in * 1000,
       };
 
       fs.writeFileSync(

@@ -259,11 +259,11 @@ async function getSleepDataV2(dataType, startDate, endDate, token) {
     token
   );
 
-  const dailySleep = (dailySleepResp.data.data || []).map(row =>
+  const dailySleep = (dailySleepResp.data || []).map(row =>
     _.omit(row, ["id", "contributors", "timestamp"])
   );
 
-  const sleep = (sleepResp.data.data || [])
+  const sleep = (sleepResp.data || [])
     .filter(row => row.type === "long_sleep")
     .map(row =>
       _.omit(row, [

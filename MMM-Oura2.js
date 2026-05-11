@@ -39,6 +39,8 @@ Module.register("MMM-Oura2", {
 		Log.info("Starting module: " + this.name);
 		self.chart_wrapper;
 		self.loaded = false;
+		self.hasError = false;
+		self.errorText = "";
 
 		// enforce ranges on configurable integer values in order to ensure somewhat sane behavior
 		if (self.config.updateInterval < 2000) {
@@ -82,6 +84,8 @@ Module.register("MMM-Oura2", {
 		if (notification === "UPDATE_CHART") {
 			console.log("got chart update.");
 			// Handle new data
+			self.hasError = false;
+			self.errorText = "";
 			self.loaded = true;
 			self.chartdata = payload;
 
@@ -89,6 +93,14 @@ Module.register("MMM-Oura2", {
 				self.updateDom();
 			}
 		}
+
+		if (notification === "OURA_ERROR") {
+			self.hasError = true;
+			self.loaded = false;
+			self.errorText = payload.message || "Unknown Oura error";
+			self.updateDom();
+		}
+
 	},
 
 	getDom: function() {
@@ -99,9 +111,15 @@ Module.register("MMM-Oura2", {
 
 		var wrapper = document.createElement('div');
 		wrapper.className = "container ";
-		wrapper.className += this.config.tableClass;
+		wrapper.className += self.config.tableClass;
 
 		wrapper.id = "oura";
+
+		if (self.hasError){
+			wrapper.innerHTML = "Oura data unavailable.<br>" + self.errorText;
+			wrapper.classList.add("bright", "light", "small");
+			return wrapper;
+		}
 
 		if (!self.data || !self.loaded) {
 			console.log("MMM-Oura2:  No data loaded, tried to load dom.");

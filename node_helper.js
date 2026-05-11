@@ -2,7 +2,6 @@ var NodeHelper = require("node_helper");
 const { getOuraData } = require("./oura_data.js");
 const fs = require("fs");
 const path = require("path");
-const crypto = require("crypto");
 
 const tokenPath = path.join(__dirname, "oura_auth.json");
 

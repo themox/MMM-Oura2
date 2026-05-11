@@ -189,8 +189,8 @@ Module.register("MMM-Oura2", {
 
 			// Per Chart configurable variables
 			var yAxisLabel = chart_type.yAxisLabel;
-			var maxYAxis = chart_type.max;
-			var hasMax = false;
+			//var maxYAxis = chart_type.max;
+			//var hasMax = false;
 			var labelColumns = chart_type.labelColumns;
 
 			// configurable options
@@ -206,7 +206,7 @@ Module.register("MMM-Oura2", {
 
    			var hasLabels = false;
 
-			var numColumns = columns.length;
+			//var numColumns = columns.length;
 			var colNum = 0;
 
 			var datasets = [];

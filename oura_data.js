@@ -14,12 +14,18 @@ function loadTokenFromFile() {
   return tokens.access_token;
 }
 
-const _ = require("lodash");
+//const _ = require("lodash");
 const { DateTime } = require("luxon");
 const yargs = require("yargs/yargs");
 const { hideBin } = require("yargs/helpers");
 
 const OURA_BASE = "https://api.ouraring.com/v2/usercollection";
+
+function fillMissing(row) {
+  return Object.fromEntries(
+    Object.entries(row).map(([k, v]) => [k, v ?? 0])
+  );
+}
 
 async function getOuraData(config) {
   const activity = config.activity || "all";
@@ -55,10 +61,6 @@ async function getOuraData(config) {
 
 function authHeaders(token) {
   return { Authorization: `Bearer ${token}` };
-}
-
-function fillMissing(row) {
-  return _.mapValues(row, v => v ?? 0);
 }
 
 function rowsToColumns(rows, indexKey = "day") {
@@ -135,18 +137,24 @@ async function getHRData(startDate, endDate, token) {
     nextToken = response.next_token;
   } while (nextToken);
 
-  const grouped = _.groupBy(rows, row =>
-    DateTime.fromISO(row.timestamp).toFormat("yyyy-MM-dd")
-  );
+  const grouped = {};
+
+  for (const row of rows) {
+    const key = DateTime.fromISO(row.timestamp)
+      .toFormat("yyyy-MM-dd");
+
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(row);
+  }
 
   return Object.entries(grouped).map(([day, dayRows]) => {
-    const bpm = dayRows.map(r => r.bpm).filter(_.isFinite);
+    const bpm = dayRows.map(r => r.bpm).filter(Number.isFinite);
 
     return fillMissing({
       day,
-      hr_mean_bpm: _.mean(bpm),
-      hr_max_bpm: _.max(bpm),
-      hr_min_bpm: _.min(bpm),
+      hr_mean_bpm: bpm.reduce((a, b) => a + b, 0) / bpm.length,
+      hr_max_bpm: Math.max(bpm),
+      hr_min_bpm: Math.min(bpm),
     });
   });
 }
@@ -259,37 +267,55 @@ async function getSleepDataV2(dataType, startDate, endDate, token) {
     token
   );
 
+  const dailySleepOmit = [
+    "id",
+    "contributors",
+    "timestamp",
+  ];
+
   const dailySleep = (dailySleepResp.data || []).map(row =>
-    _.omit(row, ["id", "contributors", "timestamp"])
+    Object.fromEntries(
+      Object.entries(row).filter(
+        ([key]) => !dailySleepOmit.includes(key)
+      )
+    )
   );
+
+  const sleepOmit = [
+    "id",
+    "sleep_algorithm_version",
+    "time_in_bed",
+    "heart_rate",
+    "deep_sleep_duration",
+    "rem_sleep_duration",
+    "restless_periods",
+    "sleep_phase_5_min",
+    "movement_30_sec",
+    "readiness_score_delta",
+    "sleep_score_delta",
+    "light_sleep_duration",
+    "low_battery_alert",
+    "period",
+    "readiness",
+    "bedtime_end",
+    "bedtime_start",
+    "hrv",
+    "type",
+  ];
 
   const sleep = (sleepResp.data || [])
     .filter(row => row.type === "long_sleep")
     .map(row =>
-      _.omit(row, [
-        "id",
-        "sleep_algorithm_version",
-        "time_in_bed",
-        "heart_rate",
-        "deep_sleep_duration",
-        "rem_sleep_duration",
-        "restless_periods",
-        "sleep_phase_5_min",
-        "movement_30_sec",
-        "readiness_score_delta",
-        "sleep_score_delta",
-        "light_sleep_duration",
-        "low_battery_alert",
-        "period",
-        "readiness",
-        "bedtime_end",
-        "bedtime_start",
-        "hrv",
-        "type",
-      ])
+      Object.fromEntries(
+        Object.entries(row).filter(
+          ([key]) => !sleepOmit.includes(key)
+        )
+      )
     );
 
-  const sleepByDay = _.keyBy(sleep, "day");
+  const sleepByDay = Object.fromEntries(
+    sleep.map(row => [row.day, row])
+  );
 
   return dailySleep
     .map(row => ({
@@ -329,9 +355,7 @@ function outerMergeByDay(...datasets) {
     }
   }
 
-  const allKeys = _.uniq(
-    Object.values(merged).flatMap(row => Object.keys(row))
-  );
+  const allKeys = [...new Set(Object.values(merged).flatMap(row => Object.keys(row)))];  
 
   return Object.values(merged)
     .sort((a, b) => a.day.localeCompare(b.day))

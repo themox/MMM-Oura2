@@ -21,9 +21,8 @@ I don't get the sense many people are using this beyond me, but if you are and l
 ### Dependencies
 
 1. Chart.js
-2. lodash
-3. luxon
-4. yargs
+2. luxon
+3. yargs
 
 ## Installation
 
@@ -38,6 +37,7 @@ MMM-Oura2 uses OAuth2 and requires a one-time (ish) authorization step.  This is
 1. Create an Oura API application
 * Create an app at [the new Oura Developer site](https://developer.ouraring.com/applications).
 * Configure redirect URL (use this hard-coded one): `http://localhost:53682/callback`
+* For both the Privacy Policy and Terms of service, I think you can just use the URL to this GitHub page.  It works for me; someone will have to let me know if it doesn't work for them.
 * After you save the app, copy the created `Client ID` and `Client Secret` to use for the next step.
 2. Create an OAuth credentials file
 * In your base MMM-Oura2 folder, create `oura_credentials.json`.
@@ -53,7 +53,6 @@ MMM-Oura2 uses OAuth2 and requires a one-time (ish) authorization step.  This is
   }
 }
 ```
-
 <br/>
 Use the Client ID and Client Secret you got from your app page here.  Note that the URL is the same one you used in the step above when you created your app.
 

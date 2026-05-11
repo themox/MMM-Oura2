@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Module for the [MagicMirror²](https://github.com/MagicMirrorOrg/MagicMirror/) smart mirror.",
   "main": "MMM-Oura2.js",
+  "type": "commonjs",
   "scripts": {
     "lint": "eslint",
     "lint:fix": "eslint --fix",
@@ -19,7 +20,7 @@
     "health",
     "wearables"
   ],
-  "author": "",
+  "author": "Joe Duchesneau",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/themox/MMM-Oura2/issues"
@@ -41,7 +42,6 @@
   },
   "dependencies": {
     "chart.js": "^4.5.1",
-    "lodash": "^4.18.1",
     "luxon": "^3.7.2",
     "yargs": "^18.0.0"
   }

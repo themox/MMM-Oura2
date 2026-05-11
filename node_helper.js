@@ -67,17 +67,13 @@ async function getAccessToken(config) {
 	console.log("[MMM-Oura2] expired:", Date.now() >= tokens?.expires_at - 60000);
 
 	if (!tokens) {
-		    console.log(`Authorize Oura: ${config.redirectUri.replace("/oauth/callback", "/oauth/start")}`);
-		throw new Error(
-		
-			`MMM-Oura2 is not authorized yet. Visit: ${status.authorizeUrl}`
-		);
+		  console.log(`Authorize Oura: ${config.redirectUri.replace("/oauth/callback", "/oauth/start")}`);
+		  throw new Error(`MMM-Oura2 is not authorized yet. Visit: ${status.authorizeUrl}`);
 	}
-	  //let tokens = loadTokens();
 
-  if (!tokens) {
-
-    throw new Error("MMM-Oura2 is not authorized yet");
+  if (!tokens.refresh_token) {
+    console.log("Oura refresh token missing. Re-run OAuth setup.");
+    throw new Error("Oura refresh token missing. Re-run OAuth setup.");
   }
 
   if (Date.now() < tokens.expires_at - 60000) {
@@ -128,19 +124,29 @@ module.exports = NodeHelper.create({
 		}
 	},
 
-	getOura: async function(config) {
-		try {
-			console.log("[MMM-Oura2] fetching access token");
-			const token = await getAccessToken(config);
+  getOura: async function(config) {
+    try {
+      //console.log("[MMM-Oura2] fetching access token");
+      const token = await getAccessToken(config);
+      //console.log("[MMM-Oura2] fetching Oura data");
+      const ouradata = await getOuraData({ ...config, token });
 
-			//console.log("[MMM-Oura2] fetching Oura data");
-			const ouradata = await getOuraData({ ...config, token });
+      //console.log("[MMM-Oura2] Oura data columns:", Object.keys(ouradata || {}));
+      this.sendSocketNotification("UPDATE_CHART", ouradata);
+    } catch (err) {
+      const message =
+        err.response?.data?.detail ||
+        err.response?.data?.title ||
+        err.message ||
+        String(err);
 
-			//console.log("[MMM-Oura2] Oura data columns:", Object.keys(ouradata || {}));
-			this.sendSocketNotification("UPDATE_CHART", ouradata);
-		} catch (err) {
-			console.log("[MMM-Oura2] Oura fetch error");
-			console.log(err.response?.data || err.message || err);
-		}
-	},
+      console.log("[MMM-Oura2] Oura fetch error:", message);
+
+      this.sendSocketNotification("OURA_ERROR", {
+        message,
+        status: err.response?.status || null,
+      });
+    }
+  },
+
 });

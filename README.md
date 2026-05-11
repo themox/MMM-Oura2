@@ -4,7 +4,7 @@ Module for the [MagicMirror²](https://github.com/MagicMirrorOrg/MagicMirror/) s
 
 Displays a user's Oura data in a chart.  Inspired by [MMM-Oura](https://github.com/erchenger/MMM-Oura), but I was looking for a little more data.  Still a work in progress but feature requests and feedback are welcome.
 <br><br>
-When I first made this app, I had just learned Pandas and was very excited about it, so I made this based on a Python backend using Pandas as the primary library to organize the data.  These days I realize that is an unnecessary layer on top of the MagicMirror framework, so I have reworked the app to be exclusively in JS.  I still love Pandas but realize it may not be The Tool for all situations.
+When I first made this app, I had just learned Pandas and was very excited about it, so I made this based on a Python backend using Pandas as the primary library to organize the data.  These days I realize that is an unnecessary layer on top of the MagicMirror² framework, so I have reworked the app to be exclusively in JS.  I still love Pandas but realize it may not be The Tool for all situations.
 <br><br>
 This version of MMM-Oura2 drops the Python backend entirely, uses the Oura V2 api, and now uses the new OAuth2 workflow.  If you still have a PAT and don't want to update to the OAuth2 method, you can use the older commit, `891df51`.  I won't be updating that method anymore, though, since Oura has moved to this new style.  All future updates to functionality and features will use OAuth2.
 <br>
@@ -27,7 +27,7 @@ I don't get the sense many people are using this beyond me, but if you are and l
 ## Installation
 
 To install the module, use your terminal to:
-1. Navigate to your MagicMirror's modules folder. If you are using the default installation directory, use the command:<br />`cd ~/MagicMirror/modules`
+1. Navigate to your MagicMirror²'s modules folder. If you are using the default installation directory, use the command:<br />`cd ~/MagicMirror/modules`
 2. Clone the module:<br />`git clone https://github.com/themox/MMM-Oura2.git`
 3. Install required apis:<br />`npm install`
 
@@ -65,9 +65,9 @@ Use the Client ID and Client Secret you got from your app page here.  Note that 
     - Copy the full redirected URL from the browser URL window back into the terminal at the prompt given.
 * This creates a new file, `oura_auth.json`
 
-4. Configure Oura module inside MagicMirror `config.js` as described below.
+4. Configure Oura module inside MagicMirror² `config.js` as described below.
 
-5. Restart MagicMirror.
+5. Restart MagicMirror².
 
 ## Testing
 
@@ -126,7 +126,7 @@ Oura's new API requires me to show you the below items as well:
 
 ## Terms of Use:
 
-This code is provided free of charge, to be used at your own risk.  It is intended to provide you some control over your own data, to be used in the MagicMirror framework.
+This code is provided free of charge, to be used at your own risk.  It is intended to provide you some control over your own data, to be used in the MagicMirror² framework.
 
 ## Privacy Policy:
 
